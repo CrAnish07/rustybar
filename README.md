@@ -1,3 +1,3 @@
 # rustybar
 
-A simple and lightweight terminal progress bar for Rust programs.
+A lightweight terminal progress bar for Rust programs.
