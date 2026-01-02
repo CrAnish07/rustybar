@@ -10,7 +10,6 @@ fn main() {
 
     let mut downloaded = 0;
 
-
     while downloaded < total_size {
         // You can add more sofisticated ways to halt the program, but this works.
         if ctrl_c() {
