@@ -2,8 +2,11 @@ use atty::Stream;
 use crossterm::{
     ExecutableCommand,
     cursor::{self, MoveTo},
+    event,
     terminal::{disable_raw_mode, enable_raw_mode},
 };
+
+use std::time::Duration;
 use std::{
     io::{self, Write},
     sync::{
@@ -177,7 +180,10 @@ impl ProgressBar {
         }
     }
 
-    pub fn tick(&mut self, progress: usize) {
+    pub fn tick(&mut self, progress: usize) -> bool {
+        if ctrl_c() {
+            return true;
+        }
         let percent = (progress * 100) / self.size.max(1);
         self.curr = (percent * self.len) / 100;
 
@@ -224,6 +230,8 @@ impl ProgressBar {
         );
 
         out.flush().unwrap();
+
+        false
     }
 
     pub fn style(&mut self, fill: FillStyle, emp: EmptyStyle) {
@@ -286,6 +294,29 @@ impl Drop for ProgressBar {
             cursor_restore();
         }
     }
+}
+
+/// Returns true if CTRL+C has been pressed
+///
+fn ctrl_c() -> bool {
+    // event::poll() checks if there is an event ready to be handled
+    // if you call event::read() without this it would halt the program until there is an event
+    if let Ok(res) = event::poll(Duration::ZERO) {
+        if !res {
+            return false;
+        }
+        // Check if the event read was of type event::Event::Key. We don't care about mouse and other events
+        if let event::Event::Key(event) = event::read().unwrap() {
+            // If the key pressed has the modifier CONTROL and the char of the key is 'c', i.e. CTRL+C
+            if event.modifiers == event::KeyModifiers::CONTROL
+                && event.code == event::KeyCode::Char('c')
+            {
+                return true;
+            }
+        }
+    }
+
+    false
 }
 
 #[cfg(test)]
