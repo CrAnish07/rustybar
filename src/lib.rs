@@ -6,7 +6,7 @@ use crossterm::{
     terminal::{disable_raw_mode, enable_raw_mode},
 };
 
-use std::time::{Duration};
+use std::time::Duration;
 use std::{
     io::{self, Write},
     sync::{
@@ -181,7 +181,9 @@ impl ProgressBar {
     }
 
     pub fn tick(&mut self, progress: usize) -> bool {
-        if ctrl_c() { return true }
+        if ctrl_c() {
+            return true;
+        }
         let percent = (progress * 100) / self.size.max(1);
         self.curr = (percent * self.len) / 100;
 
@@ -310,7 +312,7 @@ fn ctrl_c() -> bool {
             }
         }
     }
-    
+
     false
 }
 
