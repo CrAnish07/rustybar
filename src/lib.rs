@@ -6,9 +6,7 @@ use crossterm::{
     terminal::{disable_raw_mode, enable_raw_mode},
 };
 
-use std::io::{self, Read, Write};
-use std::sync::Once;
-use std::time::{Duration, Instant};
+use std::time::{Duration};
 use std::{
     io::{self, Write},
     sync::{
@@ -182,7 +180,8 @@ impl ProgressBar {
         }
     }
 
-    pub fn tick(&mut self, progress: usize) {
+    pub fn tick(&mut self, progress: usize) -> bool {
+        if ctrl_c() { return true }
         let percent = (progress * 100) / self.size.max(1);
         self.curr = (percent * self.len) / 100;
 
@@ -229,6 +228,8 @@ impl ProgressBar {
         );
 
         out.flush().unwrap();
+
+        false
     }
 
     pub fn style(&mut self, fill: FillStyle, emp: EmptyStyle) {
@@ -295,7 +296,7 @@ impl Drop for ProgressBar {
 
 /// Returns true if CTRL+C has been pressed
 ///
-pub fn ctrl_c() -> bool {
+fn ctrl_c() -> bool {
     // event::poll() checks if there is an event ready to be handled
     // if you call event::read() without this it would halt the program until there is an event
     if event::poll(Duration::ZERO).unwrap() {
@@ -309,8 +310,10 @@ pub fn ctrl_c() -> bool {
             }
         }
     }
-
+    
     false
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
